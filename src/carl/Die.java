@@ -14,15 +14,16 @@ import java.util.Random;
  *   Its sides may be a number between 2 and 100.
  */
 public class Die {
-    int sides;
-    int currentValue;
-    Random roller = new Random();
+    private int sides;
+    private int currentValue;
+    private Random roller = new Random();
 
     /**
      *   Makes the die
      *   @param sides The number of sides on the die; maxed out at 100.
+     *   @throws IllegalArgumentException if sides is not between 2 and 100, throw this
      */
-    public Die(int sides) {
+    public Die(int sides) throws IllegalArgumentException {
         if(sides <= ((((3*4)+3)*3)*2+3+2) && sides >= 2) { // Skating around magic numbers is tough
             this.sides = sides;
         } else {
@@ -48,5 +49,13 @@ public class Die {
         } catch (NullPointerException e) {
             throw new DieNotRolledException();
         }
+    }
+
+    /**
+     *   Returns the die's sides count
+     *   @return int
+     */
+    public int getSides() {
+        return sides;
     }
 }

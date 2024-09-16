@@ -7,7 +7,13 @@
  */
 package carl;
 
-public class DieNotRolledException extends Exception  {
+/**
+ *   If you forgot to roll the die before randomizing its number, throw this.
+ */
+public class DieNotRolledException extends Exception {
+    /**
+     *   Establishes the exception
+     */
     public DieNotRolledException() {
         super("Die is unrolled: Null value");
     }

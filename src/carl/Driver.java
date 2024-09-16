@@ -94,7 +94,7 @@ public class Driver {
      *   @param rolls The times this set of dice should be rolled
      */
     public static void rollDice(Die dice, int numDice, int rolls) {
-        int calcMax = numDice*dice.sides;
+        int calcMax = numDice*dice.getSides();
         int[] outputCount = new int[calcMax + 1];
         for(int i = 0; i < rolls; i++) {
             int tempTotal = 0;
@@ -109,9 +109,8 @@ public class Driver {
             outputCount[tempTotal - numDice]++;
         }
         int indexMax = findMax(outputCount);
-        double perUnit = ((double) outputCount[indexMax] / 10);
-        if(rolls > 10)
-        {
+        double perUnit = (double) outputCount[indexMax] / (4+4+2);
+        if(rolls > (4+4+2)) {
             perUnit = Math.floor(perUnit);
         }
         for (int i = numDice; i < outputCount.length; i++) {
