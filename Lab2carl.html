@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>carl</title>
+  </head>
+  <body>
+    <xmp
+>
+# Lab 2 - Exceptions
+
+>> | Earned | Possible | Criteria                                         |
+>> | ------ | -------- | ------------------------------------------------ |
+>> |   15   |    15    | Intermediate Commits                             |
+>> |   60   |    60    | Technical quality (see point deductions in code) |
+>> |   15   |    15    | Coding standard compliance and program clarity   |
+>> |   10   |    10    | Following submission instructions                |
+>
+> # Feedback
+> * Nice work!
+
+
+# Die.java
+
+```
+/*
+ * Course: CSC1020
+ * Lab 2 - Exceptions
+ * Die class
+ * Name: Carl Show
+ * Last Updated: September 12, 2024
+ */
+package carl;
+
+import java.util.Random;
+
+/**
+ *   A modular die that has to be rolled prior to knowing its output.
+ *   Its sides may be a number between 2 and 100.
+ */
+public class Die {
+    private int sides;
+    private int currentValue;
+    private Random roller = new Random();
+
+    /**
+     *   Makes the die
+     *   @param sides The number of sides on the die; maxed out at 100.
+     *   @throws IllegalArgumentException if sides is not between 2 and 100, throw this
+     */
+```
+> The logic for determining whether sides is valid is overly complicated.
+> You should use static keywords to deal with MAX and MIN number of sides
+
+```
+    public Die(int sides) throws IllegalArgumentException {
+        if(sides <= ((((3*4)+3)*3)*2+3+2) && sides >= 2) { // Skating around magic numbers is tough
+            this.sides = sides;
+        } else {
+            throw new IllegalArgumentException("Sides must be between 2 and 100 inclusive");
+        }
+    }
+
+    /**
+     *   Rolls the die, giving it a random value.
+     */
+```
+> The formula should be currentValue = random.nextInt(sides) + 1; to get a random number between 1 and sides
+
+```
+    public void roll() {
+        currentValue = (Math.abs(roller.nextInt()) % sides + 1) + 1;
+    }
+
+    /**
+     *   Returns the die's current face value
+     *   @return int
+     *   @throws DieNotRolledException If the die was yet to roll, throw an exception.
+     */
+```
+> #### -5 points Wrong Exceptions catch
+> currentValue is an int, and Java's primitive types cannot be null. This means that a NullPointerException will never occur here.
+> You should check if currentValue is 0, which can signify that the die has not been rolled yet (since there are no 0-sided dice)
+
+```
+    public int getValue() throws DieNotRolledException {
+        try {
+            return currentValue;
+        } catch (NullPointerException e) {
+            throw new DieNotRolledException();
+        }
+    }
+
+    /**
+     *   Returns the die's sides count
+     *   @return int
+     */
+    public int getSides() {
+        return sides;
+    }
+}
+```
+
+# Driver.java
+
+```
+/*
+ * Course: CSC1020
+ * Lab 2 - Exceptions
+ * Main Driver class
+ * Name: Carl Show
+ * Last Updated: September 12, 2024
+ */
+package carl;
+import java.util.Scanner;
+
+/**
+ *   The driver class, instances the instantiate dice method
+ *   and catches any errors it may throw.
+ */
+public class Driver {
+
+
+```
+> Catching NegativeArraySizeException is inappropriate. This exception occurs when you attempt to create an array with a negative size, which is unrelated to rolling dice.
+> It's better to either remove this catch block or replace it with a more appropriate exception, like IllegalArgumentException
+
+```
+    public static void main(String[] args) {
+        boolean didComplete = false;
+        do {
+            try {
+                didComplete = instantiateDice();
+            } catch (IllegalArgumentException e) {
+                System.out.println("Dice failed to be made: " + e.getMessage());
+            } catch (NegativeArraySizeException e) {
+                System.out.println("Dice failed to roll: Bad number of dice");
+            }
+        } while (!didComplete);
+    }
+
+    /**
+     *   This is the parent method invokes all the other methods required to create the dice
+     *   @return Returns true once completed without error
+     */
+
+    public static boolean instantiateDice() {
+        int[] temp = getInput();
+        Die dice = createDice(temp[1]);
+        rollDice(dice, temp[0], temp[2]);
+        return true;
+    }
+
+    /**
+     *   Gathers user input and outputs it as an int[]
+     *   @return int[], with [0] as the # of dice, [1] as the sides per die, and [2]
+     *   as the number of rolls
+     */
+    public static int[] getInput() {
+        Scanner scan = new Scanner(System.in);
+        int[] output = new int[3];
+        boolean successfull = false;
+        while(!successfull) {
+            System.out.println("""
+                               Please enter the following:
+                               (1) The number of dice you'd like to roll
+                               (2) The number of sides per die (between 2 and 100)
+                               (3) The number of rolls you'd like to test
+                               Format your input as: (1) (2) (3)
+                               """);
+            String userInput = scan.nextLine();
+            String[] split = userInput.split(" ");
+
+            // Preliminary checks
+            if(split.length > 3) {
+                System.out.println("Bad input: more than 3 values");
+            } else if (split.length < 3) {
+                System.out.println("Bad input: less than 3 values");
+            } else {
+                try {
+                    for (int i = 0; i < 3; i++) {
+                        output[i] = Integer.parseInt(split[i]);
+                    }
+                    successfull = true;
+                } catch(NumberFormatException e) {
+                    System.out.println("Bad input: all 3 inputs should be integers");
+                }
+            }
+        }
+        return output;
+    }
+
+    /**
+     *   A small method that makes the die
+     *   @param sides The number of sides on the die
+     *   @return The created die
+     *   @throws IllegalArgumentException If an illegal amount of sides is given, it
+     *   spits back an exception
+     */
+    public static Die createDice(int sides) throws IllegalArgumentException {
+        return new Die(sides);
+    }
+
+    /**
+     *   The final major method, this function rolls the dice based on input
+     *   @param dice The created die to be rolled
+     *   @param numDice The number of dice to be rolled
+     *   @param rolls The times this set of dice should be rolled
+     */
+
+```
+> #### -10 points Logic error
+> rollDice() should roll all the dice, total up the values, and add to that value's total.
+> Instead of rolling the same Die object multiple times, you should create an array of dice and roll each die individually. 
+> This will ensure the correct behavior for multiple dice rolls.
+
+```
+    public static void rollDice(Die dice, int numDice, int rolls) {
+        int calcMax = numDice*dice.getSides();
+        int[] outputCount = new int[calcMax + 1];
+        for(int i = 0; i < rolls; i++) {
+            int tempTotal = 0;
+            for(int j = 0; j < numDice; j++) {
+                dice.roll();
+                try {
+                    tempTotal += dice.getValue();
+                } catch (DieNotRolledException e) {
+                    System.out.println("Catastrophic error: Dice not rolled exception");
+                }
+            }
+            outputCount[tempTotal - numDice]++;
+        }
+        int indexMax = findMax(outputCount);
+```
+> Magic number: Do not use plaintext numbers in your program!
+```
+        double perUnit = (double) outputCount[indexMax] / (4+4+2);
+        if(rolls > (4+4+2)) {
+            perUnit = Math.floor(perUnit);
+        }
+        for (int i = numDice; i < outputCount.length; i++) {
+            String workingString = i + "\t: " + outputCount[i] + "\t || ";
+            for(int j = 0; j < Math.floor(outputCount[i]/perUnit); j++) {
+                workingString += "*";
+            }
+            System.out.println(workingString);
+        }
+    }
+
+    /**
+     *   Finds the maximum within an int[]
+     *   @param input The int[] to be searched
+     *   @return int, the maximum.
+     */
+    public static int findMax(int[] input) {
+        int indexOfMax = 0;
+        int max = 0;
+        for(int i = 0; i < input.length; i++) {
+            if (input[i] > max) {
+                indexOfMax = i;
+                max = input[i];
+            }
+        }
+        return indexOfMax;
+    }
+}
+```
+
+</xmp
+    >
+    <script
+      type="text/javascript"
+      src="https://csse.msoe.us/gradedown.js"
+    ></script>
+  </body>
+</html>
